@@ -1,0 +1,491 @@
+```html
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1"
+  >
+
+  <title>
+    Lector QR - Sistema de Asistencia
+  </title>
+
+  <script src="https://unpkg.com/html5-qrcode"></script>
+
+  <style>
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f3f4f6;
+      color: #222;
+    }
+
+    .contenedor {
+      max-width: 600px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    .tarjeta {
+      background: white;
+      padding: 25px;
+      border-radius: 14px;
+      box-shadow: 0 4px 20px rgba(0,0,0,.10);
+    }
+
+    h1 {
+      text-align: center;
+      margin-top: 0;
+    }
+
+    #lectorQR {
+      width: 100%;
+      margin-top: 20px;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 15px;
+      border: 0;
+      border-radius: 8px;
+      background: #2563eb;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #1d4ed8;
+    }
+
+    #btnDetener {
+      background: #dc2626;
+      display: none;
+    }
+
+    .mensaje {
+      margin-top: 20px;
+      padding: 14px;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .normal {
+      background: #e5e7eb;
+      color: #374151;
+    }
+
+    .exito {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .error {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .resultado {
+      display: none;
+      margin-top: 20px;
+      padding: 20px;
+      border-radius: 10px;
+      background: #eff6ff;
+      text-align: center;
+      word-break: break-word;
+    }
+
+  </style>
+
+</head>
+
+
+<body>
+
+<div class="contenedor">
+
+  <div class="tarjeta">
+
+    <h1>
+      Lector QR
+    </h1>
+
+    <p style="text-align:center;">
+      Sistema de Asistencia Escolar
+    </p>
+
+
+    <div
+      id="estado"
+      class="mensaje normal">
+
+      Pulsa "Iniciar cámara"
+
+    </div>
+
+
+    <div id="lectorQR"></div>
+
+
+    <button
+      id="btnIniciar"
+      onclick="iniciarScanner()">
+
+      INICIAR CÁMARA
+
+    </button>
+
+
+    <button
+      id="btnDetener"
+      onclick="detenerScanner()">
+
+      DETENER CÁMARA
+
+    </button>
+
+
+    <div
+      id="resultado"
+      class="resultado">
+    </div>
+
+  </div>
+
+</div>
+
+
+<script>
+
+let scannerQR = null;
+
+let scannerActivo = false;
+
+let ultimoCodigo = '';
+
+let ultimoTiempo = 0;
+
+
+/************************************************
+ * INICIAR SCANNER
+ ************************************************/
+
+function iniciarScanner() {
+
+  mostrarEstado(
+    'Solicitando acceso a la cámara...',
+    'normal'
+  );
+
+
+  if (scannerQR) {
+
+    try {
+
+      scannerQR.clear();
+
+    } catch (error) {
+
+      console.log(error);
+
+    }
+
+    scannerQR = null;
+
+  }
+
+
+  scannerQR =
+    new Html5Qrcode(
+      'lectorQR'
+    );
+
+
+  const configuracion = {
+
+    fps: 10,
+
+    qrbox: {
+      width: 250,
+      height: 250
+    },
+
+    aspectRatio: 1.0
+
+  };
+
+
+  scannerQR.start(
+
+    {
+      facingMode: 'environment'
+    },
+
+    configuracion,
+
+    function(decodedText) {
+
+      procesarQR(decodedText);
+
+    },
+
+    function(errorMessage) {
+
+      // Errores normales durante
+      // la búsqueda del QR.
+    }
+
+  )
+
+  .then(function() {
+
+    scannerActivo = true;
+
+
+    document
+      .getElementById('btnIniciar')
+      .style.display = 'none';
+
+
+    document
+      .getElementById('btnDetener')
+      .style.display = 'block';
+
+
+    mostrarEstado(
+      'Cámara activa. Escanea el QR del alumno.',
+      'exito'
+    );
+
+  })
+
+  .catch(function(error) {
+
+    console.error(
+      'Error de cámara:',
+      error
+    );
+
+
+    scannerActivo = false;
+
+
+    mostrarEstado(
+      'No fue posible acceder a la cámara: ' +
+      error,
+      'error'
+    );
+
+  });
+
+}
+
+
+/************************************************
+ * PROCESAR QR
+ ************************************************/
+
+function procesarQR(codigo) {
+
+  codigo =
+    String(codigo || '')
+      .trim();
+
+
+  if (!codigo) {
+    return;
+  }
+
+
+  const ahora =
+    Date.now();
+
+
+  /*
+   * Evitar lecturas repetidas
+   */
+
+  if (
+    codigo === ultimoCodigo &&
+    ahora - ultimoTiempo < 5000
+  ) {
+
+    return;
+
+  }
+
+
+  ultimoCodigo = codigo;
+
+  ultimoTiempo = ahora;
+
+
+  mostrarEstado(
+    'QR detectado correctamente.',
+    'exito'
+  );
+
+
+  const resultado =
+    document.getElementById(
+      'resultado'
+    );
+
+
+  resultado.style.display = 'block';
+
+
+  resultado.innerHTML =
+
+    '<strong>QR DETECTADO</strong>' +
+
+    '<br><br>' +
+
+    'Código leído:' +
+
+    '<br><br>' +
+
+    '<strong>' +
+
+    escaparHTML(codigo) +
+
+    '</strong>';
+
+}
+
+
+/************************************************
+ * DETENER SCANNER
+ ************************************************/
+
+function detenerScanner() {
+
+  if (
+    !scannerQR ||
+    !scannerActivo
+  ) {
+
+    return;
+
+  }
+
+
+  scannerQR
+    .stop()
+
+    .then(function() {
+
+      scannerQR.clear();
+
+      scannerActivo = false;
+
+
+      document
+        .getElementById('btnIniciar')
+        .style.display = 'block';
+
+
+      document
+        .getElementById('btnDetener')
+        .style.display = 'none';
+
+
+      mostrarEstado(
+        'Cámara detenida.',
+        'normal'
+      );
+
+    })
+
+    .catch(function(error) {
+
+      console.error(
+        error
+      );
+
+    });
+
+}
+
+
+/************************************************
+ * MENSAJES
+ ************************************************/
+
+function mostrarEstado(
+  texto,
+  tipo
+) {
+
+  const elemento =
+    document.getElementById(
+      'estado'
+    );
+
+
+  elemento.innerText =
+    texto;
+
+
+  elemento.className =
+    'mensaje ' + tipo;
+
+}
+
+
+/************************************************
+ * SEGURIDAD HTML
+ ************************************************/
+
+function escaparHTML(
+  texto
+) {
+
+  return String(
+    texto || ''
+  )
+
+  .replace(
+    /&/g,
+    '&amp;'
+  )
+
+  .replace(
+    /</g,
+    '&lt;'
+  )
+
+  .replace(
+    />/g,
+    '&gt;'
+  )
+
+  .replace(
+    /"/g,
+    '&quot;'
+  )
+
+  .replace(
+    /'/g,
+    '&#039;'
+  );
+
+}
+
+</script>
+
+</body>
+
+</html>
+```
