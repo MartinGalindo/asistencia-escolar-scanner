@@ -1,4 +1,4 @@
-```html
+
 <!DOCTYPE html>
 <html lang="es">
 
@@ -167,6 +167,60 @@
 
 
 <script>
+  const APPS_SCRIPT_URL =
+  'https://script.google.com/macros/s/AKfycbwc2DA6ba0kGgGgXtuoyfu2k_LFlH7DIw95IpGZdKxCkr9A9j9gW043qIPdF-LyZRQTQQ/exec';
+
+  async function enviarAlServidor(datos) {
+
+  try {
+
+    const respuesta = await fetch(
+      APPS_SCRIPT_URL,
+      {
+        method: 'POST',
+
+        headers: {
+          'Content-Type': 'text/plain;charset=utf-8'
+        },
+
+        body: JSON.stringify(datos)
+      }
+    );
+
+
+    const texto =
+      await respuesta.text();
+
+
+    console.log(
+      'Respuesta Apps Script:',
+      texto
+    );
+
+
+    return JSON.parse(texto);
+
+
+  } catch (error) {
+
+    console.error(
+      'Error comunicando con Apps Script:',
+      error
+    );
+
+
+    return {
+
+      ok: false,
+
+      mensaje:
+        'No fue posible comunicarse con el servidor.'
+
+    };
+
+  }
+
+}
 
 let scannerQR = null;
 
@@ -488,4 +542,3 @@ function escaparHTML(
 </body>
 
 </html>
-```
