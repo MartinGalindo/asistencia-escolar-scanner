@@ -710,7 +710,11 @@ function iniciarScanner() {
  * PROCESAR QR
  ************************************************/
 
-function procesarQR(codigo) {
+/************************************************
+ * PROCESAR QR
+ ************************************************/
+
+async function procesarQR(codigo) {
 
   codigo =
     String(codigo || '')
@@ -722,13 +726,29 @@ function procesarQR(codigo) {
   }
 
 
-  const ahora =
-    Date.now();
+  /*
+   * Verificar que exista sesión
+   */
+
+  if (!tokenSesion) {
+
+    mostrarEstado(
+      'La sesión ha expirado. Inicia sesión nuevamente.',
+      'error'
+    );
+
+    return;
+
+  }
 
 
   /*
    * Evitar lecturas repetidas
    */
+
+  const ahora =
+    Date.now();
+
 
   if (
     codigo === ultimoCodigo &&
@@ -740,16 +760,180 @@ function procesarQR(codigo) {
   }
 
 
-  ultimoCodigo = codigo;
+  ultimoCodigo =
+    codigo;
 
-  ultimoTiempo = ahora;
+  ultimoTiempo =
+    ahora;
 
 
   mostrarEstado(
-    'QR detectado correctamente.',
+    'QR detectado. Registrando asistencia...',
+    'normal'
+  );
+
+
+  /*
+   * Identificar dispositivo
+   */
+
+  const dispositivo =
+    detectarDispositivo();
+
+
+  /*
+   * Enviar a Google Apps Script
+   */
+
+  const respuesta =
+    await enviarAlServidor({
+
+      accion:
+        'REGISTRAR_ASISTENCIA',
+
+      token:
+        tokenSesion,
+
+      codigoQR:
+        codigo,
+
+      dispositivo:
+        dispositivo
+
+    });
+
+
+  console.log(
+    'Respuesta asistencia:',
+    respuesta
+  );
+
+
+  /*
+   * Error de comunicación
+   */
+
+  if (!respuesta) {
+
+    mostrarEstado(
+      'No se recibió respuesta del servidor.',
+      'error'
+    );
+
+    return;
+
+  }
+
+
+  /*
+   * Sesión expirada
+   */
+
+  if (
+    respuesta.mensaje &&
+    respuesta.mensaje
+      .toLowerCase()
+      .includes('sesión')
+  ) {
+
+    mostrarEstado(
+      respuesta.mensaje,
+      'error'
+    );
+
+    return;
+
+  }
+
+
+  /*
+   * Mostrar resultado
+   */
+
+  if (!respuesta.ok) {
+
+    mostrarEstado(
+      respuesta.mensaje ||
+      'No fue posible registrar la asistencia.',
+      'error'
+    );
+
+
+    mostrarResultadoAsistencia(
+      respuesta
+    );
+
+    return;
+
+  }
+
+
+  /*
+   * Registro exitoso
+   */
+
+  mostrarEstado(
+    respuesta.mensaje,
     'exito'
   );
 
+
+  mostrarResultadoAsistencia(
+    respuesta
+  );
+
+}
+
+/************************************************
+ * DETECTAR DISPOSITIVO
+ ************************************************/
+
+function detectarDispositivo() {
+
+  const agente =
+    navigator.userAgent ||
+    navigator.vendor ||
+    window.opera;
+
+
+  if (
+    /android/i.test(agente)
+  ) {
+
+    return 'ANDROID';
+
+  }
+
+
+  if (
+    /iPad|iPhone|iPod/i.test(agente)
+  ) {
+
+    return 'IOS';
+
+  }
+
+
+  if (
+    /tablet/i.test(agente)
+  ) {
+
+    return 'TABLET';
+
+  }
+
+
+  return 'PC';
+
+}
+
+/************************************************
+ * MOSTRAR RESULTADO ASISTENCIA
+ ************************************************/
+
+function mostrarResultadoAsistencia(
+  respuesta
+) {
 
   const resultado =
     document.getElementById(
@@ -757,28 +941,85 @@ function procesarQR(codigo) {
     );
 
 
-  resultado.style.display = 'block';
+  if (!resultado) {
+    return;
+  }
+
+
+  resultado.style.display =
+    'block';
+
+
+  let titulo =
+    'Resultado';
+
+
+  if (
+    respuesta.tipo ===
+    'ENTRADA'
+  ) {
+
+    titulo =
+      '✅ ENTRADA REGISTRADA';
+
+  }
+
+
+  if (
+    respuesta.tipo ===
+    'SALIDA'
+  ) {
+
+    titulo =
+      '✅ SALIDA REGISTRADA';
+
+  }
+
+
+  if (
+    respuesta.tipo ===
+    'COMPLETA'
+  ) {
+
+    titulo =
+      '⚠️ ASISTENCIA COMPLETA';
+
+  }
 
 
   resultado.innerHTML =
 
-    '<strong>QR DETECTADO</strong>' +
-
-    '<br><br>' +
-
-    'Código leído:' +
-
-    '<br><br>' +
-
     '<strong>' +
+    titulo +
+    '</strong>' +
 
-    escaparHTML(codigo) +
+    '<br><br>' +
 
-    '</strong>';
+    '<strong>Alumno:</strong><br>' +
+
+    escaparHTML(
+      respuesta.alumno || ''
+    ) +
+
+    '<br><br>' +
+
+    '<strong>Hora:</strong><br>' +
+
+    escaparHTML(
+      respuesta.hora || ''
+    ) +
+
+    '<br><br>' +
+
+    '<strong>Mensaje:</strong><br>' +
+
+    escaparHTML(
+      respuesta.mensaje || ''
+    );
 
 }
-
-
+  
+  
 /************************************************
  * DETENER SCANNER
  ************************************************/
