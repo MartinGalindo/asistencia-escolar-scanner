@@ -137,6 +137,10 @@
 
     <div id="lectorQR"></div>
 
+    <button onclick="probarConexionAppsScript()">
+  PROBAR CONEXIÓN
+</button>
+
 
     <button
       id="btnIniciar"
@@ -221,6 +225,24 @@
   }
 
 }
+async function probarConexionAppsScript() {
+
+  const resultado =
+    await enviarAlServidor({
+      accion: 'PRUEBA'
+    });
+
+  console.log(
+    'RESULTADO DE PRUEBA:',
+    resultado
+  );
+
+  alert(
+    JSON.stringify(resultado)
+  );
+
+}
+  
 
 let scannerQR = null;
 
