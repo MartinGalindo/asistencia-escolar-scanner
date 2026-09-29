@@ -106,6 +106,47 @@
       word-break: break-word;
     }
 
+  
+
+#asistenciaManual {
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 2px solid #e5e7eb;
+  text-align: center;
+}
+
+#numeroManual {
+  width: 100%;
+  padding: 16px;
+  font-size: 32px;
+  font-weight: bold;
+  text-align: center;
+  letter-spacing: 10px;
+  border: 2px solid #94a3b8;
+  border-radius: 10px;
+}
+
+.tecladoManual {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.tecladoManual button {
+  margin: 0;
+  padding: 18px 4px;
+  font-size: 19px;
+}
+
+#confirmacionManual {
+  margin-top: 20px;
+  padding: 16px;
+  background: #eff6ff;
+  border-radius: 10px;
+}
+
+    
   </style>
 
 </head>
@@ -259,6 +300,57 @@
 
     </button>
 
+  
+<div id="asistenciaManual">
+  <h2>Asistencia por número</h2>
+  <p>Introduce los cuatro dígitos del alumno.</p>
+
+  <input
+    id="numeroManual"
+    type="text"
+    inputmode="numeric"
+    maxlength="4"
+    placeholder="0000"
+    autocomplete="off"
+    oninput="this.value=this.value.replace(/\D/g,'').slice(0,4)"
+  >
+
+  <div class="tecladoManual">
+    <button onclick="teclaManual('1')">1</button>
+    <button onclick="teclaManual('2')">2</button>
+    <button onclick="teclaManual('3')">3</button>
+    <button onclick="teclaManual('4')">4</button>
+    <button onclick="teclaManual('5')">5</button>
+    <button onclick="teclaManual('6')">6</button>
+    <button onclick="teclaManual('7')">7</button>
+    <button onclick="teclaManual('8')">8</button>
+    <button onclick="teclaManual('9')">9</button>
+    <button onclick="borrarNumeroManual()">BORRAR</button>
+    <button onclick="teclaManual('0')">0</button>
+    <button onclick="buscarNumeroManual()">BUSCAR</button>
+  </div>
+
+  <div id="confirmacionManual" style="display:none;">
+    <h3>Confirma los datos del alumno</h3>
+    <div id="datosAlumnoManual"></div>
+
+    <button
+      id="btnConfirmarManual"
+      onclick="confirmarAsistenciaManual()"
+      style="background:#15803d;"
+    >
+      CONFIRMAR ASISTENCIA
+    </button>
+
+    <button
+      onclick="cancelarAsistenciaManual()"
+      style="background:#6b7280;"
+    >
+      CANCELAR
+    </button>
+  </div>
+</div>
+  
 
     <div
       id="resultado"
@@ -1138,6 +1230,153 @@ function escaparHTML(
 
 }
 
+
+let alumnoManual = null;
+let consultaManualEnCurso = false;
+
+function teclaManual(digito) {
+  const campo = document.getElementById('numeroManual');
+
+  if (campo.value.length < 4) {
+    campo.value += digito;
+  }
+
+  alumnoManual = null;
+  document.getElementById('confirmacionManual')
+    .style.display = 'none';
+}
+
+function borrarNumeroManual() {
+  const campo = document.getElementById('numeroManual');
+  campo.value = campo.value.slice(0, -1);
+
+  alumnoManual = null;
+  document.getElementById('confirmacionManual')
+    .style.display = 'none';
+}
+
+async function buscarNumeroManual() {
+  if (consultaManualEnCurso) return;
+
+  const numero = document
+    .getElementById('numeroManual')
+    .value.trim();
+
+  if (!/^[0-9]{4}$/.test(numero)) {
+    mostrarEstado(
+      'Introduce los cuatro dígitos del alumno.',
+      'error'
+    );
+    return;
+  }
+
+  if (!tokenSesion) {
+    mostrarEstado(
+      'Debes iniciar sesión.',
+      'error'
+    );
+    return;
+  }
+
+  consultaManualEnCurso = true;
+  alumnoManual = null;
+
+  document.getElementById('confirmacionManual')
+    .style.display = 'none';
+
+  mostrarEstado('Buscando alumno...', 'normal');
+
+  try {
+    const respuesta = await enviarAlServidor({
+      accion: 'BUSCAR_ALUMNO_NUMERO',
+      token: tokenSesion,
+      numero: numero
+    });
+
+    if (!respuesta || !respuesta.ok) {
+      mostrarEstado(
+        respuesta?.mensaje || 'No se encontró al alumno.',
+        'error'
+      );
+      return;
+    }
+
+    alumnoManual = respuesta.alumno;
+
+    document.getElementById('datosAlumnoManual')
+      .innerHTML =
+        '<p><strong>Nombre:</strong> ' +
+        escaparHTML(alumnoManual.nombreCompleto) +
+        '</p><p><strong>Grado:</strong> ' +
+        escaparHTML(alumnoManual.grado) +
+        '</p><p><strong>Grupo:</strong> ' +
+        escaparHTML(alumnoManual.grupo) +
+        '</p><p><strong>Número:</strong> ' +
+        escaparHTML(alumnoManual.numeroAsistencia) +
+        '</p>';
+
+    document.getElementById('confirmacionManual')
+      .style.display = 'block';
+
+    mostrarEstado(
+      'Comprueba los datos antes de confirmar.',
+      'normal'
+    );
+
+  } finally {
+    consultaManualEnCurso = false;
+  }
+}
+
+async function confirmarAsistenciaManual() {
+  if (!alumnoManual || consultaManualEnCurso) return;
+
+  consultaManualEnCurso = true;
+
+  const boton = document.getElementById(
+    'btnConfirmarManual'
+  );
+
+  boton.disabled = true;
+
+  try {
+    const respuesta = await enviarAlServidor({
+      accion: 'REGISTRAR_ASISTENCIA_NUMERO',
+      token: tokenSesion,
+      numero: alumnoManual.numeroAsistencia,
+      dispositivo: detectarDispositivo()
+    });
+
+    mostrarEstado(
+      respuesta?.mensaje || 'No se recibió respuesta.',
+      respuesta?.ok ? 'exito' : 'error'
+    );
+
+    if (respuesta) {
+      mostrarResultadoAsistencia(respuesta);
+    }
+
+    if (respuesta?.ok || respuesta?.tipo === 'COMPLETA') {
+      cancelarAsistenciaManual();
+    }
+
+  } finally {
+    consultaManualEnCurso = false;
+    boton.disabled = false;
+  }
+}
+
+function cancelarAsistenciaManual() {
+  alumnoManual = null;
+
+  document.getElementById('numeroManual').value = '';
+
+  document.getElementById('confirmacionManual')
+    .style.display = 'none';
+}
+
+
+  
 </script>
 
 </body>
