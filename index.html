@@ -146,6 +146,185 @@
   border-radius: 10px;
 }
 
+/* =========================================
+   SELECCIÓN DE MÉTODO DE ASISTENCIA
+========================================= */
+
+#seleccionMetodo {
+  margin-top: 25px;
+}
+
+.tituloMetodo {
+  text-align: center;
+  font-size: 20px;
+  margin-bottom: 20px;
+}
+
+.opcionesMetodo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.tarjetaMetodo {
+  margin: 0;
+  min-height: 180px;
+  padding: 20px 10px;
+  background: #ffffff;
+  color: #1f2937;
+  border: 2px solid #dbeafe;
+  border-radius: 14px;
+  box-shadow: 0 3px 12px rgba(0,0,0,.08);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.tarjetaMetodo:hover {
+  background: #eff6ff;
+  border-color: #2563eb;
+}
+
+.iconoMetodo {
+  display: block;
+  font-size: 48px;
+  margin-bottom: 15px;
+}
+
+.numeroIcono {
+  font-size: 34px;
+  font-weight: bold;
+  color: #2563eb;
+}
+
+.nombreMetodo {
+  display: block;
+  font-size: 17px;
+  font-weight: bold;
+}
+
+.descripcionMetodo {
+  display: block;
+  margin-top: 8px;
+  font-size: 14px;
+  font-weight: normal;
+  color: #6b7280;
+}
+
+.metodoAsistencia {
+  margin-top: 25px;
+  text-align: center;
+}
+
+.instruccionMetodo {
+  color: #6b7280;
+  margin-bottom: 18px;
+}
+
+
+/* =========================================
+   NÚMERO DE ASISTENCIA
+========================================= */
+
+#numeroManual {
+  width: 100%;
+  padding: 18px;
+  margin-top: 5px;
+
+  font-size: 36px;
+  font-weight: bold;
+  text-align: center;
+  letter-spacing: 12px;
+
+  border: 2px solid #94a3b8;
+  border-radius: 10px;
+
+  background: #ffffff;
+  color: #1e3a5f;
+
+  cursor: default;
+}
+
+
+/* =========================================
+   TECLADO
+========================================= */
+
+.tecladoManual {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.tecladoManual button {
+  margin: 0;
+  padding: 18px 4px;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.btnBorrar {
+  background: #dc2626;
+}
+
+.btnBorrar:hover {
+  background: #b91c1c;
+}
+
+.btnBuscarNumero {
+  background: #15803d;
+}
+
+.btnBuscarNumero:hover {
+  background: #166534;
+}
+
+
+/* =========================================
+   CONFIRMACIÓN
+========================================= */
+
+#confirmacionManual {
+  margin-top: 20px;
+  padding: 18px;
+  background: #eff6ff;
+  border-radius: 10px;
+}
+
+
+/* =========================================
+   CAMBIAR MÉTODO
+========================================= */
+
+.btnCambiarMetodo {
+  margin-top: 25px;
+  background: #6b7280;
+}
+
+.btnCambiarMetodo:hover {
+  background: #4b5563;
+}
+
+
+/* =========================================
+   CELULARES
+========================================= */
+
+@media (max-width: 500px) {
+
+  .opcionesMetodo {
+    grid-template-columns: 1fr;
+  }
+
+  .tarjetaMetodo {
+    min-height: 140px;
+  }
+
+}
+
     
   </style>
 
@@ -240,7 +419,7 @@
 
 
 <!-- =========================================
-     LECTOR QR
+     REGISTRO DE ASISTENCIA
 ========================================= -->
 
 <div
@@ -251,7 +430,7 @@
   <div class="tarjeta">
 
     <h1>
-      Lector QR
+      Registrar asistencia
     </h1>
 
     <p
@@ -259,98 +438,235 @@
       id="usuarioActual">
     </p>
 
-
     <button
       onclick="logout()"
-      style="
-        background:#6b7280;
-      ">
-
+      style="background:#6b7280;">
       CERRAR SESIÓN
-
     </button>
 
+
+    <!-- ESTADO GENERAL -->
 
     <div
       id="estado"
       class="mensaje normal">
 
-      Pulsa "Iniciar cámara"
+      Selecciona un método de registro.
 
     </div>
 
 
-    <div id="lectorQR"></div>
+    <!-- =====================================
+         SELECCIÓN DE MÉTODO
+    ====================================== -->
+
+    <div id="seleccionMetodo">
+
+      <h2 class="tituloMetodo">
+        ¿Cómo deseas registrar la asistencia?
+      </h2>
+
+      <div class="opcionesMetodo">
+
+        <button
+          type="button"
+          class="tarjetaMetodo"
+          onclick="seleccionarMetodo('QR')">
+
+          <span class="iconoMetodo">
+            📷
+          </span>
+
+          <span class="nombreMetodo">
+            ESCANEAR QR
+          </span>
+
+          <span class="descripcionMetodo">
+            Utilizar la cámara
+          </span>
+
+        </button>
 
 
-    <button
-      id="btnIniciar"
-      onclick="iniciarScanner()">
+        <button
+          type="button"
+          class="tarjetaMetodo"
+          onclick="seleccionarMetodo('NUMERO')">
 
-      INICIAR CÁMARA
+          <span class="iconoMetodo numeroIcono">
+            1234
+          </span>
 
-    </button>
+          <span class="nombreMetodo">
+            INGRESAR NÚMERO
+          </span>
+
+          <span class="descripcionMetodo">
+            Utilizar teclado
+          </span>
+
+        </button>
+
+      </div>
+
+    </div>
 
 
-    <button
-      id="btnDetener"
-      onclick="detenerScanner()">
+    <!-- =====================================
+         MÉTODO QR
+    ====================================== -->
 
-      DETENER CÁMARA
+    <div
+      id="metodoQR"
+      class="metodoAsistencia"
+      style="display:none;">
 
-    </button>
+      <h2>
+        Escanear código QR
+      </h2>
 
-  
-<div id="asistenciaManual">
-  <h2>Asistencia por número</h2>
-  <p>Introduce los cuatro dígitos del alumno.</p>
+      <p class="instruccionMetodo">
+        Coloca el código QR del alumno frente a la cámara.
+      </p>
 
-  <input
-    id="numeroManual"
-    type="text"
-    inputmode="numeric"
-    maxlength="4"
-    placeholder="0000"
-    autocomplete="off"
-    oninput="this.value=this.value.replace(/\D/g,'').slice(0,4)"
-  >
 
-  <div class="tecladoManual">
-    <button onclick="teclaManual('1')">1</button>
-    <button onclick="teclaManual('2')">2</button>
-    <button onclick="teclaManual('3')">3</button>
-    <button onclick="teclaManual('4')">4</button>
-    <button onclick="teclaManual('5')">5</button>
-    <button onclick="teclaManual('6')">6</button>
-    <button onclick="teclaManual('7')">7</button>
-    <button onclick="teclaManual('8')">8</button>
-    <button onclick="teclaManual('9')">9</button>
-    <button onclick="borrarNumeroManual()">BORRAR</button>
-    <button onclick="teclaManual('0')">0</button>
-    <button onclick="buscarNumeroManual()">BUSCAR</button>
-  </div>
+      <div id="lectorQR"></div>
 
-  <div id="confirmacionManual" style="display:none;">
-    <h3>Confirma los datos del alumno</h3>
-    <div id="datosAlumnoManual"></div>
 
-    <button
-      id="btnConfirmarManual"
-      onclick="confirmarAsistenciaManual()"
-      style="background:#15803d;"
-    >
-      CONFIRMAR ASISTENCIA
-    </button>
+      <button
+        id="btnIniciar"
+        onclick="iniciarScanner()">
 
-    <button
-      onclick="cancelarAsistenciaManual()"
-      style="background:#6b7280;"
-    >
-      CANCELAR
-    </button>
-  </div>
-</div>
-  
+        INICIAR CÁMARA
+
+      </button>
+
+
+      <button
+        id="btnDetener"
+        onclick="detenerScanner()">
+
+        DETENER CÁMARA
+
+      </button>
+
+
+      <button
+        class="btnCambiarMetodo"
+        onclick="cambiarMetodo()">
+
+        ← CAMBIAR MÉTODO
+
+      </button>
+
+    </div>
+
+
+    <!-- =====================================
+         MÉTODO NÚMERO
+    ====================================== -->
+
+    <div
+      id="metodoNumero"
+      class="metodoAsistencia"
+      style="display:none;">
+
+      <h2>
+        Asistencia por número
+      </h2>
+
+      <p class="instruccionMetodo">
+        Introduce los cuatro dígitos del alumno.
+      </p>
+
+
+      <input
+        id="numeroManual"
+        type="text"
+        maxlength="4"
+        placeholder="----"
+        autocomplete="off"
+        readonly
+      >
+
+
+      <div class="tecladoManual">
+
+        <button onclick="teclaManual('1')">1</button>
+        <button onclick="teclaManual('2')">2</button>
+        <button onclick="teclaManual('3')">3</button>
+
+        <button onclick="teclaManual('4')">4</button>
+        <button onclick="teclaManual('5')">5</button>
+        <button onclick="teclaManual('6')">6</button>
+
+        <button onclick="teclaManual('7')">7</button>
+        <button onclick="teclaManual('8')">8</button>
+        <button onclick="teclaManual('9')">9</button>
+
+        <button
+          class="btnBorrar"
+          onclick="borrarNumeroManual()">
+          BORRAR
+        </button>
+
+        <button onclick="teclaManual('0')">0</button>
+
+        <button
+          class="btnBuscarNumero"
+          onclick="buscarNumeroManual()">
+          BUSCAR
+        </button>
+
+      </div>
+
+
+      <!-- CONFIRMACIÓN DEL ALUMNO -->
+
+      <div
+        id="confirmacionManual"
+        style="display:none;">
+
+        <h3>
+          Confirma los datos del alumno
+        </h3>
+
+        <div id="datosAlumnoManual"></div>
+
+
+        <button
+          id="btnConfirmarManual"
+          onclick="confirmarAsistenciaManual()"
+          style="background:#15803d;">
+
+          CONFIRMAR ASISTENCIA
+
+        </button>
+
+
+        <button
+          onclick="cancelarAsistenciaManual()"
+          style="background:#6b7280;">
+
+          CANCELAR
+
+        </button>
+
+      </div>
+
+
+      <button
+        class="btnCambiarMetodo"
+        onclick="cambiarMetodo()">
+
+        ← CAMBIAR MÉTODO
+
+      </button>
+
+    </div>
+
+
+    <!-- RESULTADO -->
 
     <div
       id="resultado"
@@ -360,7 +676,6 @@
   </div>
 
 </div>
-
   
 <script>
   const APPS_SCRIPT_URL =
@@ -1377,6 +1692,159 @@ function cancelarAsistenciaManual() {
 }
 
 
+/************************************************
+ * SELECCIONAR MÉTODO DE ASISTENCIA
+ ************************************************/
+
+function seleccionarMetodo(metodo) {
+
+  document
+    .getElementById('seleccionMetodo')
+    .style.display = 'none';
+
+
+  document
+    .getElementById('resultado')
+    .style.display = 'none';
+
+
+  if (metodo === 'QR') {
+
+    document
+      .getElementById('metodoQR')
+      .style.display = 'block';
+
+    document
+      .getElementById('metodoNumero')
+      .style.display = 'none';
+
+
+    mostrarEstado(
+      'Pulsa "Iniciar cámara" para escanear el QR.',
+      'normal'
+    );
+
+    return;
+
+  }
+
+
+  if (metodo === 'NUMERO') {
+
+    document
+      .getElementById('metodoQR')
+      .style.display = 'none';
+
+    document
+      .getElementById('metodoNumero')
+      .style.display = 'block';
+
+
+    cancelarAsistenciaManual();
+
+
+    mostrarEstado(
+      'Introduce los cuatro dígitos del alumno.',
+      'normal'
+    );
+
+  }
+
+}
+
+
+/************************************************
+ * CAMBIAR MÉTODO
+ ************************************************/
+
+async function cambiarMetodo() {
+
+  /*
+   * Si la cámara está funcionando,
+   * detenerla antes de regresar.
+   */
+
+  if (
+    scannerQR &&
+    scannerActivo
+  ) {
+
+    try {
+
+      await scannerQR.stop();
+
+      scannerQR.clear();
+
+    } catch (error) {
+
+      console.log(
+        'No fue necesario detener la cámara:',
+        error
+      );
+
+    }
+
+    scannerActivo = false;
+
+
+    document
+      .getElementById('btnIniciar')
+      .style.display = 'block';
+
+
+    document
+      .getElementById('btnDetener')
+      .style.display = 'none';
+
+  }
+
+
+  /*
+   * Limpiar número manual
+   */
+
+  cancelarAsistenciaManual();
+
+
+  /*
+   * Ocultar los dos métodos
+   */
+
+  document
+    .getElementById('metodoQR')
+    .style.display = 'none';
+
+
+  document
+    .getElementById('metodoNumero')
+    .style.display = 'none';
+
+
+  /*
+   * Ocultar resultado anterior
+   */
+
+  document
+    .getElementById('resultado')
+    .style.display = 'none';
+
+
+  /*
+   * Mostrar las dos tarjetas
+   */
+
+  document
+    .getElementById('seleccionMetodo')
+    .style.display = 'block';
+
+
+  mostrarEstado(
+    'Selecciona un método de registro.',
+    'normal'
+  );
+
+}
+  
   
 </script>
 
