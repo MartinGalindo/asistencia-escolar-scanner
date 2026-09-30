@@ -325,6 +325,184 @@
 
 }
 
+/* =========================================
+   RESULTADO DE ASISTENCIA
+========================================= */
+
+.tarjetaResultado {
+  margin-top: 25px;
+  padding: 25px 18px;
+
+  text-align: center;
+
+  border-radius: 16px;
+  border: 2px solid transparent;
+
+  box-shadow:
+    0 4px 14px rgba(0,0,0,.10);
+}
+
+
+/* ICONO */
+
+.resultadoIcono {
+  width: 70px;
+  height: 70px;
+
+  margin:
+    0 auto 15px auto;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  font-size: 42px;
+  font-weight: bold;
+}
+
+
+/* TÍTULO */
+
+.resultadoTitulo {
+  font-size: 23px;
+  font-weight: 800;
+
+  letter-spacing: .5px;
+}
+
+
+/* NOMBRE DEL ALUMNO */
+
+.resultadoAlumno {
+  margin-top: 18px;
+
+  font-size: 25px;
+  font-weight: 800;
+
+  line-height: 1.25;
+
+  color: #111827;
+}
+
+
+/* HORA */
+
+.resultadoHora {
+  margin-top: 14px;
+
+  font-size: 36px;
+  font-weight: 800;
+
+  letter-spacing: 2px;
+
+  color: #1e3a5f;
+}
+
+
+/* MENSAJE */
+
+.resultadoMensaje {
+  margin-top: 18px;
+
+  padding-top: 15px;
+
+  border-top:
+    1px solid rgba(0,0,0,.10);
+
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+
+/* =========================================
+   ENTRADA
+========================================= */
+
+.resultadoEntrada {
+  background: #ecfdf5;
+  border-color: #22c55e;
+}
+
+.resultadoEntrada
+.resultadoTitulo {
+  color: #166534;
+}
+
+.resultadoEntrada
+.resultadoIcono {
+  background: #22c55e;
+  color: #ffffff;
+}
+
+
+/* =========================================
+   SALIDA
+========================================= */
+
+.resultadoSalida {
+  background: #eff6ff;
+  border-color: #3b82f6;
+}
+
+.resultadoSalida
+.resultadoTitulo {
+  color: #1d4ed8;
+}
+
+.resultadoSalida
+.resultadoIcono {
+  background: #3b82f6;
+  color: #ffffff;
+}
+
+
+/* =========================================
+   ASISTENCIA COMPLETA
+========================================= */
+
+.resultadoCompleta {
+  background: #fffbeb;
+  border-color: #f59e0b;
+}
+
+.resultadoCompleta
+.resultadoTitulo {
+  color: #92400e;
+}
+
+.resultadoCompleta
+.resultadoIcono {
+  background: #f59e0b;
+  color: #ffffff;
+}
+
+
+/* =========================================
+   CELULAR
+========================================= */
+
+@media (max-width: 500px) {
+
+  .tarjetaResultado {
+    padding:
+      22px 14px;
+  }
+
+  .resultadoTitulo {
+    font-size: 21px;
+  }
+
+  .resultadoAlumno {
+    font-size: 22px;
+  }
+
+  .resultadoHora {
+    font-size: 32px;
+  }
+
+}    
     
   </style>
 
@@ -1339,91 +1517,129 @@ function detectarDispositivo() {
  * MOSTRAR RESULTADO ASISTENCIA
  ************************************************/
 
-function mostrarResultadoAsistencia(
-  respuesta
-) {
+function mostrarResultadoAsistencia(respuesta) {
 
   const resultado =
-    document.getElementById(
-      'resultado'
-    );
-
+    document.getElementById('resultado');
 
   if (!resultado) {
     return;
   }
 
 
+  const tipo =
+    String(respuesta.tipo || '')
+      .trim()
+      .toUpperCase();
+
+
+  let clase = 'resultadoInfo';
+
+  let icono = '✓';
+
+  let titulo = 'RESULTADO';
+
+  let textoFinal =
+    respuesta.mensaje || '';
+
+
+  /*
+   * ENTRADA
+   */
+  if (tipo === 'ENTRADA') {
+
+    clase = 'resultadoEntrada';
+
+    icono = '✓';
+
+    titulo =
+      'ENTRADA REGISTRADA';
+
+    textoFinal =
+      respuesta.mensaje ||
+      'Entrada registrada correctamente.';
+
+  }
+
+
+  /*
+   * SALIDA
+   */
+  if (tipo === 'SALIDA') {
+
+    clase = 'resultadoSalida';
+
+    icono = '✓';
+
+    titulo =
+      'SALIDA REGISTRADA';
+
+    textoFinal =
+      respuesta.mensaje ||
+      'Salida registrada correctamente.';
+
+  }
+
+
+  /*
+   * ASISTENCIA COMPLETA
+   */
+  if (tipo === 'COMPLETA') {
+
+    clase = 'resultadoCompleta';
+
+    icono = '!';
+
+    titulo =
+      'ASISTENCIA COMPLETA';
+
+    textoFinal =
+      respuesta.mensaje ||
+      'La entrada y la salida ya fueron registradas hoy.';
+
+  }
+
+
+  /*
+   * MOSTRAR RESULTADO
+   */
+
+  resultado.className =
+    'resultado tarjetaResultado ' + clase;
+
   resultado.style.display =
     'block';
 
 
-  let titulo =
-    'Resultado';
-
-
-  if (
-    respuesta.tipo ===
-    'ENTRADA'
-  ) {
-
-    titulo =
-      '✅ ENTRADA REGISTRADA';
-
-  }
-
-
-  if (
-    respuesta.tipo ===
-    'SALIDA'
-  ) {
-
-    titulo =
-      '✅ SALIDA REGISTRADA';
-
-  }
-
-
-  if (
-    respuesta.tipo ===
-    'COMPLETA'
-  ) {
-
-    titulo =
-      '⚠️ ASISTENCIA COMPLETA';
-
-  }
-
-
   resultado.innerHTML =
 
-    '<strong>' +
-    titulo +
-    '</strong>' +
+    '<div class="resultadoIcono">' +
+      escaparHTML(icono) +
+    '</div>' +
 
-    '<br><br>' +
+    '<div class="resultadoTitulo">' +
+      escaparHTML(titulo) +
+    '</div>' +
 
-    '<strong>Alumno:</strong><br>' +
+    '<div class="resultadoAlumno">' +
+      escaparHTML(
+        respuesta.alumno || ''
+      ) +
+    '</div>' +
 
-    escaparHTML(
-      respuesta.alumno || ''
+    (
+      respuesta.hora
+        ?
+        '<div class="resultadoHora">' +
+          escaparHTML(respuesta.hora) +
+        '</div>'
+        :
+        ''
     ) +
 
-    '<br><br>' +
-
-    '<strong>Hora:</strong><br>' +
-
-    escaparHTML(
-      respuesta.hora || ''
-    ) +
-
-    '<br><br>' +
-
-    '<strong>Mensaje:</strong><br>' +
-
-    escaparHTML(
-      respuesta.mensaje || ''
-    );
+    '<div class="resultadoMensaje">' +
+      escaparHTML(textoFinal) +
+    '</div>';
 
 }
   
